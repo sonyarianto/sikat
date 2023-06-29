@@ -33,7 +33,7 @@ async function main() {
 
   console.log(`Probing ${userPage}\n`);
 
-  // Probing target
+  // Probing target page
 
   const browser = await chromium.launch();
   const context = await browser.newContext();
