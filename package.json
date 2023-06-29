@@ -1,0 +1,34 @@
+{
+  "name": "sikat",
+  "version": "0.0.1",
+  "description": "Fun probing tools",
+  "main": "./dist/index.js",
+  "scripts": {},
+  "bin": {
+    "sikat": "./dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sonyarianto/sikat.git"
+  },
+  "keywords": [
+    "probe",
+    "utility",
+    "tools"
+  ],
+  "author": "Sony Arianto Kurniawan <sony@sony-ak.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sonyarianto/sikat/issues"
+  },
+  "homepage": "https://github.com/sonyarianto/sikat#readme",
+  "devDependencies": {
+    "@types/node": "^20.3.2",
+    "jiti": "^1.18.2",
+    "prettier": "^2.8.8",
+    "tsup": "^7.1.0"
+  },
+  "dependencies": {
+    "playwright": "^1.35.1"
+  }
+}
