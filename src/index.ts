@@ -20,7 +20,7 @@ async function main() {
     }
   });
 
-  const url = `${argv.flags.scheme}://${argv._.host}`;
+  const url = `${argv.flags.scheme}://${argv._.url}`;
 
   const browser = await chromium.launch();
   const context = await browser.newContext();
