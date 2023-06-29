@@ -68,11 +68,49 @@ async function main() {
   xPoweredByHeader && console.log(`X-Powered-By: ${xPoweredByHeader}`);
   remoteAddress &&
     console.log(
-      `Remote Address: ${remoteAddress.ipAddress}:${remoteAddress.port}`
+      `Remote address: ${remoteAddress.ipAddress}:${remoteAddress.port}`
     );
   jqueryVersion && console.log(`jQuery: ${jqueryVersion}`);
   generatorContent && console.log(`Site generator: ${generatorContent}`);
   alpineVersion && console.log(`Alpine.js: ${alpineVersion}`);
+  const hreflangData = await page.evaluate(() => {
+    const linkElements = Array.from(
+      document.querySelectorAll('head > link[rel="alternate"]')
+    );
+
+    const filteredElements = linkElements.filter((element) =>
+      element.hasAttribute("hreflang")
+    );
+
+    return filteredElements.map((element) => ({
+      hreflang: element.getAttribute("hreflang"),
+      href: element.getAttribute("href"),
+    }));
+  });
+  if (hreflangData) {
+    console.log("Language versions:");
+    hreflangData.forEach((data) => {
+      console.log(`- ${data.hreflang}: ${data.href}`);
+    });
+  }
+
+  const title = await page.title();
+  title && console.log(`Title: ${title}`);
+
+  const description = await page.evaluate(() => {
+    const metaTag = document.querySelector('head > meta[name="description"]');
+    return metaTag ? metaTag.getAttribute("content") : null;
+  });
+  description && console.log(`Description: ${description}`);
+
+  const rssFeed = await page.evaluate(() => {
+    const linkElement = document.querySelector(
+        'head > link[type="application/rss+xml"]'
+      ),
+      href = linkElement ? linkElement.getAttribute("href") : null;
+    return href;
+  });
+  rssFeed && console.log(`RSS feed: ${rssFeed}`);
 
   if (argv.flags.screenshot) {
     await page.screenshot({ path: slugify(userPage) + ".png" });
