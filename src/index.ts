@@ -9,7 +9,7 @@ async function main() {
     name: appName,
     version: appVersion,
     parameters: [
-        '<host>'
+        '<url>'
     ],
     flags: {
         scheme: {
