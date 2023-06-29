@@ -33,7 +33,7 @@ async function main() {
 
   console.log(`Probing ${userPage}\n`);
 
-  // Probing the page
+  // Probing target
 
   const browser = await chromium.launch();
   const context = await browser.newContext();
@@ -41,8 +41,21 @@ async function main() {
   const response = await page.goto(userPage);
 
   const serverHeader = response?.headers()["server"];
+  serverHeader && console.log(`Server: ${serverHeader}`);
+
   const xPoweredByHeader = response?.headers()["x-powered-by"];
+  xPoweredByHeader && console.log(`X-Powered-By: ${xPoweredByHeader}`);
+
   const remoteAddress = await response?.serverAddr();
+  remoteAddress &&
+    console.log(
+      `Remote address: ${remoteAddress.ipAddress}:${remoteAddress.port}`
+    );
+
+  // Libraries detection
+
+  let libraries: string[] = [];
+
   const jqueryVersion = await page.evaluate(() => {
     if ((window as any).jQuery) {
       return (window as any).jQuery.fn.jquery;
@@ -50,6 +63,10 @@ async function main() {
       return null;
     }
   });
+
+  if (jqueryVersion) {
+    libraries.push(`jQuery ${jqueryVersion}`);
+  }
 
   const alpineVersion = await page.evaluate(() => {
     if ((window as any).Alpine) {
@@ -59,20 +76,23 @@ async function main() {
     }
   });
 
+  if (alpineVersion) {
+    libraries.push(`Alpine.js ${alpineVersion}`);
+  }
+
+  if (libraries.length > 0) {
+    console.log("Libraries:");
+    libraries.forEach((name) => {
+      console.log(`- ${name}`);
+    });
+  }
+
   const generatorContent = await page.evaluate(() => {
     const metaTag = document.querySelector('head > meta[name="generator"]');
     return metaTag ? metaTag.getAttribute("content") : null;
   });
-
-  serverHeader && console.log(`Server: ${serverHeader}`);
-  xPoweredByHeader && console.log(`X-Powered-By: ${xPoweredByHeader}`);
-  remoteAddress &&
-    console.log(
-      `Remote address: ${remoteAddress.ipAddress}:${remoteAddress.port}`
-    );
-  jqueryVersion && console.log(`jQuery: ${jqueryVersion}`);
   generatorContent && console.log(`Site generator: ${generatorContent}`);
-  alpineVersion && console.log(`Alpine.js: ${alpineVersion}`);
+
   const hreflangData = await page.evaluate(() => {
     const linkElements = Array.from(
       document.querySelectorAll('head > link[rel="alternate"]')
@@ -87,8 +107,8 @@ async function main() {
       href: element.getAttribute("href"),
     }));
   });
-  if (hreflangData) {
-    console.log("Language versions:");
+  if (hreflangData.length > 0) {
+    console.log("Languages:");
     hreflangData.forEach((data) => {
       console.log(`- ${data.hreflang}: ${data.href}`);
     });
@@ -111,6 +131,49 @@ async function main() {
     return href;
   });
   rssFeed && console.log(`RSS feed: ${rssFeed}`);
+
+  // Analytics detection
+
+  let analytics: string[] = [];
+
+  const isUsingMicrosoftClarity = await page.evaluate(() => {
+    const scriptPattern =
+      /\(function\s*\(\s*c,\s*l,\s*a,\s*r,\s*i,\s*t,\s*y\s*\)\s*\{/;
+    const htmlContent = document.documentElement.innerHTML;
+    return scriptPattern.test(htmlContent);
+  });
+
+  if (isUsingMicrosoftClarity) {
+    analytics.push("Microsoft Clarity");
+  }
+
+  const isUsingGTM = await page.evaluate(() => {
+    const scriptPattern = /\(function\s*\(\s*w,\s*d,\s*s,\s*l,\s*i\s*\)\s*\{/;
+    const htmlContent = document.documentElement.innerHTML;
+    return scriptPattern.test(htmlContent);
+  });
+
+  if (isUsingGTM) {
+    analytics.push("Google Tag Manager");
+  }
+
+  const isUsingGA = await page.evaluate(() => {
+    const scriptPattern =
+      /\(function\s*\(\s*i,\s*s,\s*o,\s*g,\s*r,\s*a,\s*m\s*\)\s*\{/;
+    const htmlContent = document.documentElement.innerHTML;
+    return scriptPattern.test(htmlContent);
+  });
+
+  if (isUsingGA) {
+    analytics.push("Google Analytics");
+  }
+
+  if (analytics.length > 0) {
+    console.log("Analytics:");
+    analytics.forEach((name) => {
+      console.log(`- ${name}`);
+    });
+  }
 
   if (argv.flags.screenshot) {
     await page.screenshot({ path: slugify(userPage) + ".png" });
